@@ -1,16 +1,17 @@
 {
-  "name": "protractor-jasmine2-html-reporter",
-  "version": "0.0.5",
-  "description": "HTML reporter for Jasmine2 and Protractor",
+  "name": "testx-html-reporter",
+  "version": "0.1.0",
+  "description": "HTML reporter for testx",
   "main": "index.js",
   "scripts": {
     "test": "protractor protractor.config.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Kenzitron/protractor-jasmine2-html-reporter"
+    "url": "https://github.com/testxio/html-reporter.git"
   },
   "keywords": [
+    "testx",
     "jasmine2",
     "protractor",
     "reporter",
@@ -21,10 +22,10 @@
     "end2end",
     "bdd"
   ],
-  "author": "Alejandro Asensio <alejandro@kenzilab.com> (http://www.kenzilab.com/)",
-  "license": "BSD-2-Clause",
+  "author": "Greyarch BV",
+  "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Kenzitron/protractor-jasmine2-html-reporter/issues"
+    "url": "https://github.com/testxio/html-reporter/issues"
   },
   "dependencies": {
     "hat": "0.0.3",

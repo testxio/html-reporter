@@ -75,12 +75,19 @@ function Jasmine2HTMLReporter(options) {
     options = options || {};
     self.takeScreenshots = options.takeScreenshots === UNDEFINED ? true : options.takeScreenshots;
     self.savePath = options.savePath || '';
+    if(self.savePath && !self.savePath.endsWith('/')) {
+        self.savePath += "/"
+    }
     self.takeScreenshotsOnlyOnFailures = options.takeScreenshotsOnlyOnFailures === UNDEFINED ? false : options.takeScreenshotsOnlyOnFailures;
     self.screenshotsFolder = (options.screenshotsFolder || 'screenshots').replace(/^\//, '') + '/';
     self.useDotNotation = options.useDotNotation === UNDEFINED ? true : options.useDotNotation;
     self.consolidate = options.consolidate === UNDEFINED ? true : options.consolidate;
     self.consolidateAll = self.consolidate !== false && (options.consolidateAll === UNDEFINED ? true : options.consolidateAll);
     self.filePrefix = options.filePrefix || (self.consolidateAll ? 'htmlReport' : 'htmlReport-');
+
+    self.showPassed = !!options.showPassed;
+    self.showSkippedCount = !!options.showSkippedCount;
+    self.showStacktrace = !!options.showStacktrace;
 
     var suites = [],
         currentSuite = null,
@@ -185,7 +192,15 @@ function Jasmine2HTMLReporter(options) {
             self.suiteDone(fakeFocusedSuite);
         }
 
-        var output = '';
+        var tests = 0, failed = 0, skipped = 0;
+        for (var i = 0; i < suites.length; i++) {
+          s = suites[i];
+          tests += s._specs.length;
+          failed += s._failures;
+          skipped += s._skipped;
+        }
+        output = '<h1' + (failed ? ' style="color:red;"' : '') + '>Tests: ' + tests +
+                  (self.showSkippedCount ? ' Skipped: ' + skipped : '') + ' Failures: ' + failed + '</h1>';
         for (var i = 0; i < suites.length; i++) {
             output += self.getOrWriteNestedOutput(suites[i]);
         }
@@ -261,32 +276,35 @@ function Jasmine2HTMLReporter(options) {
         html += '<h2>' + getFullyQualifiedSuiteName(suite) + ' - ' + elapsed(suite._startTime, suite._endTime) + 's</h2>';
         html += '<ul class="stats">';
         html += '<li>Tests: <strong>' + suite._specs.length + '</strong></li>';
-        html += '<li>Skipped: <strong>' + suite._skipped + '</strong></li>';
+        if(self.showSkippedCount) {
+          html += '<li>Skipped: <strong>' + suite._skipped + '</strong></li>';
+        }
         html += '<li>Failures: <strong>' + suite._failures + '</strong></li>';
         html += '</ul> </header>';
 
         for (var i = 0; i < suite._specs.length; i++) {
             var spec = suite._specs[i];
-            html += '<div class="spec">';
-            html += specAsHtml(spec);
-                html += '<div class="resume">';
-                if (spec.screenshot !== UNDEFINED){
-                    html += '<a href="' + self.screenshotsFolder + '/' + spec.screenshot + '">';
-                    html += '<img src="' + self.screenshotsFolder + '/' + spec.screenshot + '" width="100" height="100" />';
-                    html += '</a>';
-                }
-                html += '<br />';
-                var num_tests= spec.failedExpectations.length + spec.passedExpectations.length;
-                var percentage = (spec.passedExpectations.length*100)/num_tests;
-                html += '<span>Tests passed: ' + parseDecimalRoundAndFixed(percentage,2) + '%</span><br /><progress max="100" value="' + Math.round(percentage) + '"></progress>';
-                html += '</div>';
-            html += '</div>';
+            if(self.showPassed || spec.status != 'passed') {
+              html += '<div class="spec">';
+              html += specAsHtml(spec);
+                  html += '<div class="resume">';
+                  if (spec.screenshot !== UNDEFINED){
+                      html += '<a href="' + self.screenshotsFolder + '/' + spec.screenshot + '">';
+                      html += '<img src="' + self.screenshotsFolder + '/' + spec.screenshot + '" width="100" height="100" />';
+                      html += '</a>';
+                  }
+                  html += '<br />';
+                  var num_tests= spec.failedExpectations.length + spec.passedExpectations.length;
+                  var percentage = (spec.passedExpectations.length*100)/num_tests;
+                  html += '<span>Tests passed: ' + parseDecimalRoundAndFixed(percentage,2) + '%</span><br /><progress max="100" value="' + Math.round(percentage) + '"></progress>';
+                  html += '</div>';
+              html += '</div>';
+            }
         }
-        html += '\n </article>';
+        html += '\n </article><br/>';
         return html;
     }
     function specAsHtml(spec) {
-
         var html = '<div class="description">';
         html += '<h3>' + escapeInvalidHtmlChars(spec.description) + ' - ' + elapsed(spec._startTime, spec._endTime) + 's</h3>';
 
@@ -295,6 +313,9 @@ function Jasmine2HTMLReporter(options) {
             _.each(spec.failedExpectations, function(expectation){
                 html += '<li>';
                 html += expectation.message + '<span style="padding:0 1em;color:red;">&#10007;</span>';
+                if(self.showStacktrace) {
+                  html += '<p><strong>Stacktrace:</strong><br/>' + expectation.stack + '</p>';
+                }
                 html += '</li>';
             });
             _.each(spec.passedExpectations, function(expectation){
