@@ -1,6 +1,6 @@
 {
   "name": "testx-html-reporter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "HTML reporter for testx",
   "main": "index.js",
   "scripts": {
