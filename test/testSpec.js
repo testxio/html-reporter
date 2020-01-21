@@ -7,7 +7,6 @@ describe('SPEC 1', function() {
 
         var todoList = element.all(by.repeater('todo in todoList.todos'));
         expect(todoList.count()).toEqual(3);
-        expect(todoList.count()).toEqual(6); //Failure
         expect(todoList.get(2).getText()).toEqual('write a protractor test');
     });
 
